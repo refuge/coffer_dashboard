@@ -20,12 +20,12 @@
                     <span class="glyphicon glyphicon-refresh" />
                 </button>
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    </span> Pick a storage <span class="caret"></span>
+                    <span id="pickedStorage">Pick a storage</span> <span class="caret"></span>
                 </button>
                 <ul id="storages" class="dropdown-menu" role="menu">
                 </ul>
             </div>
-            &rarr; <span id="pickedStorage">--</span>
+            &rarr;
             <span id="blobNumber"></span>
             <button type="button" class="btn btn-default" disabled="disabled" id="uploadBtn" onclick="displayModalUploadBlob('');">
                 <span class="glyphicon glyphicon-cloud-upload" />
@@ -36,7 +36,7 @@
 
         </div> <!-- /container -->
 
-        <!-- Modal -->
+        <!-- Delete Modal -->
         <div class="modal fade" id="deleteBlobModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -55,7 +55,7 @@
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
 
-        <!-- Modal -->
+        <!-- Upload Modal -->
         <div class="modal fade" id="uploadBlobModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -64,11 +64,47 @@
                         <h4 class="modal-title">Uploading a new blob</h4>
                     </div>
                     <div class="modal-body">
-                        TBD...
+                        <form class="form-inline" role="form">
+                            <div class="form-group">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <span id="chosenHashType"></span> <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li onclick="pickHashType('custom');"><a href="#">Custom</a></li>
+                                        <li class="divider"></li>
+                                        <li onclick="pickHashType('md5');"><a href="#">MD5</a></li>
+                                        <li onclick="pickHashType('sha1');"><a href="#">SHA1</a></li>
+                                    </ul>
+                                </div><!-- /btn-group -->
+                            </div>
+                            <div id="customHashTypeDiv" class="form-group" style="display: none;">
+                                <label class="sr-only" for="customeHashTypeValue">Email address</label>
+                                <input type="text" class="form-control" id="customHashTypeValue" placeholder="Custom Hash Type">
+                            </div>
+                            <div class="form-group">
+                                <label class="sr-only" for="contentHashValue">Password</label>
+                                <input type="text" class="form-control" id="contentHashValue" placeholder="Content Hash" disabled="disabled">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-body">
+                        <ul id="uploadBlobNav" class="nav nav-tabs">
+                            <li class="active"><a href="#blob-text-entry">Text Entry</a></li>
+                            <li><a href="#blob-file-entry">File</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="blob-text-entry" class="tab-pane active">
+                                <textarea id="blobInText" class="form-control" rows="5"></textarea>
+                            </div>
+                            <div id="blob-file-entry" class="tab-pane">
+                                <p>FILE!</p>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary">Upload</button>
-                        <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     </div>
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
@@ -78,6 +114,8 @@
 
     <script src="js/jquery-2.0.3.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="js/cryptojs_3.1.2/rollups/md5.js"></script>
+    <script src="js/cryptojs_3.1.2/rollups/sha1.js"></script>
     <script>
         function cleanBlobDisplay() {
             $('#pickedStorage').text('');
@@ -178,9 +216,44 @@
                 });
             }
 
+            function maybeComputeContentHash(content) {
+                var hashType = $('#chosenHashType').text();
+                var hash = "";
+                if(hashType == 'md5') {
+                    hash = CryptoJS.MD5(content);
+                } else if(hashType == 'sha1') {
+                    hash = CryptoJS.SHA1(content);
+                }
+
+                $('#contentHashValue').val(hash);
+            }
+
+            function pickHashType(hashType) {
+                $('#chosenHashType').text(hashType);
+                if(hashType == 'custom') {
+                    $('#customHashTypeDiv').show();
+                    $('#contentHashValue').prop('disabled', false);
+                } else {
+                    $('#customHashTypeDiv').hide();
+                    $('#contentHashValue').prop('disabled', true);
+                }
+
+                maybeComputeContentHash($('#blobInText').val());
+            }
+
             // init
             getStorages();
 
             $().alert();
+
+            // upload blob init
+            $('#uploadBlobNav a').click(function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+            $('#blobInText').change(function (e) {
+                e.preventDefault();
+                maybeComputeContentHash($(this).val());
+            });
         </script>
     </html>
