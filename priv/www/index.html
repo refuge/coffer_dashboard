@@ -17,9 +17,9 @@
 
             <div class="btn-group">
                 <button onclick="getStorages();" type="button" class="btn btn-default">
-                    <span class="glyphicon glyphicon-refresh">
-                    </button>
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <span class="glyphicon glyphicon-refresh" />
+                </button>
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                     </span> Pick a storage <span class="caret"></span>
                 </button>
                 <ul id="storages" class="dropdown-menu" role="menu">
@@ -27,6 +27,9 @@
             </div>
             &rarr; <span id="pickedStorage">--</span>
             <span id="blobNumber"></span>
+            <button type="button" class="btn btn-default" disabled="disabled" id="uploadBtn" onclick="displayModalUploadBlob('');">
+                <span class="glyphicon glyphicon-cloud-upload" />
+            </button>
 
             <div id="blobs">
             </div>
@@ -52,6 +55,25 @@
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
 
+        <!-- Modal -->
+        <div class="modal fade" id="uploadBlobModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Uploading a new blob</h4>
+                    </div>
+                    <div class="modal-body">
+                        TBD...
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary">Upload</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
     </body>
 
     <script src="js/jquery-2.0.3.js"></script>
@@ -62,6 +84,10 @@
             $('#blobNumber').text("");
 
             $('#blobs div.row').remove();
+        }
+
+        function cleanActionButtons() {
+            $('#uploadBtn').prop('disabled', true);
         }
 
         function getStorages() {
@@ -76,6 +102,7 @@
                 $('#storages').append(items);
             });
 
+            cleanActionButtons();
             cleanBlobDisplay();
         }
 
@@ -101,7 +128,7 @@
                         +val.blobref
                         +'"><div class="col-md-6">'
                             +val.blobref+'</div><div class="col-md-2">'
-                            +val.size+' bytes</div><div class="col-md-4"><button onclick="displayModelDeleteBlob(\''
+                            +val.size+' bytes</div><div class="col-md-4"><button onclick="displayModalDeleteBlob(\''
                                 +val.blobref
                                 +'\');" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-remove"></button></div></div>';
                         items.push(item);
@@ -116,10 +143,16 @@
                         blobNumberText = " (" + n + " blobs)";
                     }
                     $('#blobNumber').text(blobNumberText);
+
+                    $('#uploadBtn').prop('disabled', false);
                 });
             }
 
-            function displayModelDeleteBlob(blobRef) {
+            function displayModalUploadBlob(storage) {
+                $('#uploadBlobModal').modal('show');
+            }
+
+            function displayModalDeleteBlob(blobRef) {
                 $('#deleteBlobRef').text(blobRef);
                 $('#deleteBlobModal').modal('show');
             }
